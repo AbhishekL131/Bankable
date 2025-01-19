@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "570116337890",
+    "project_id": "fluenteer-e6a47",
+    "storage_bucket": "fluenteer-e6a47.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:570116337890:android:ef99f584356fa66c342ebb",
+        "android_client_info": {
+          "package_name": "com.example.fluenteer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBqQp_ZKwV-cFNoUzALotmjlTiiQvs8lvo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
