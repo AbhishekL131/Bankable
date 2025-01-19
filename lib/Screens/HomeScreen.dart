@@ -254,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildBudgetProgressBar(double remainingBudget) {
     return Card(
       color: Color(0xFFF4F4F4),
-      elevation: 8,
+      elevation: 10,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
