@@ -175,6 +175,7 @@ class _TransactionsState extends State<Transactions> {
                   labelText: "Transaction Type",
                   border: OutlineInputBorder(),
                 ),
+                dropdownColor: Colors.white,
               ),
               SizedBox(height: 20),
               // Add Transaction button
