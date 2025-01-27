@@ -73,12 +73,13 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-  final FirebaseAuthMethods authMethods = FirebaseAuthMethods(FirebaseAuth.instance);
+  final FirebaseAuthMethods authMethods = FirebaseAuthMethods(
+      FirebaseAuth.instance);
 
 
   int _page = 0;
 
-  onPageChanged(int page){
+  onPageChanged(int page) {
     setState(() {
       _page = page;
     });
@@ -90,11 +91,10 @@ class _MyHomePageState extends State<MyHomePage> {
     Reports(),
     Profile()
   ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
-
 
 
       body: IndexedStack(
@@ -103,89 +103,85 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
 
 
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.white,
-        elevation: 10,
-        currentIndex: _page,
-        onTap: onPageChanged,
-        type: BottomNavigationBarType.fixed,
-        items: [
-          BottomNavigationBarItem(
-            icon: _page == 0
-                ? ShaderMask(
-              shaderCallback: (rect) {
-                return LinearGradient(
-                  colors: [Color(0xFF00BFA5), Color(0xFF1DE9B6)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ).createShader(rect);
-              },
-              child: Icon(Icons.home, color: Colors.white),
-            )
-                : Icon(Icons.home_outlined),
-            label: "Home",
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.teal.shade900, Colors.teal.shade700],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
-          BottomNavigationBarItem(
-            icon: _page == 1
-                ? ShaderMask(
-              shaderCallback: (rect) {
-                return LinearGradient(
-                  colors: [Color(0xFF26C6DA), Color(0xFF00E5FF)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ).createShader(rect);
-              },
-              child: Icon(Icons.leaderboard, color: Colors.white),
-            )
-                : Icon(Icons.leaderboard_outlined),
-            label: "Transactions",
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(15),
+            topRight: Radius.circular(15),
           ),
-          BottomNavigationBarItem(
-            icon: _page == 2
-                ? ShaderMask(
-              shaderCallback: (rect) {
-                return LinearGradient(
-                  colors: [Color(0xFF7E57C2), Color(0xFFB39DDB)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ).createShader(rect);
-              },
-              child: Icon(Icons.file_copy, color: Colors.white),
-            )
-                : Icon(Icons.file_copy_outlined),
-            label: "Report",
-          ),
-          BottomNavigationBarItem(
-            icon: _page == 3
-                ? ShaderMask(
-              shaderCallback: (rect) {
-                return LinearGradient(
-                  colors: [Color(0xFF26A69A), Color(0xFF4DB6AC)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ).createShader(rect);
-              },
-              child: Icon(Icons.person, color: Colors.white),
-            )
-                : Icon(Icons.person_outlined),
-            label: "Profile",
-          ),
-        ],
-        selectedLabelStyle: TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
-          color: Colors.teal,
+
         ),
-        unselectedLabelStyle: TextStyle(
-          fontSize: 12,
-          color: Colors.grey,
+        child: ClipRRect(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(15),
+            topRight: Radius.circular(15),
+          ),
+          child: BottomNavigationBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            currentIndex: _page,
+            onTap: onPageChanged,
+            type: BottomNavigationBarType.fixed,
+            items: [
+              _buildNavItem(0, Icons.home, Icons.home_outlined, "Home",
+                  [Color(0xFFFF6B6B), Color(0xFFFFE66D)]),
+              _buildNavItem(1, Icons.leaderboard, Icons.leaderboard_outlined,
+                  "Transactions", [Color(0xFF4ECDC4), Color(0xFF45B7D1)]),
+              _buildNavItem(
+                  2, Icons.file_copy, Icons.file_copy_outlined, "Report",
+                  [Color(0xFFFF8C42), Color(0xFFFFF275)]),
+              _buildNavItem(3, Icons.person, Icons.person_outlined, "Profile",
+                  [Color(0xFF6A0572), Color(0xFFAB83A1)]),
+            ],
+            selectedLabelStyle: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              color: Colors.white,
+            ),
+            unselectedLabelStyle: TextStyle(
+              fontSize: 12,
+              color: Colors.white70,
+            ),
+            selectedItemColor: Colors.white,
+            unselectedItemColor: Colors.white70,
+            showUnselectedLabels: true,
+          ),
         ),
-        selectedItemColor: Colors.teal.shade900,
-        unselectedItemColor: Colors.grey.shade600,
-        showUnselectedLabels: true,
       ),
 
+    );
+  }
 
+  BottomNavigationBarItem _buildNavItem(int index, IconData selectedIcon,
+      IconData unselectedIcon, String label, List<Color> gradientColors) {
+    return BottomNavigationBarItem(
+      icon: _page == index
+          ? Container(
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            colors: gradientColors,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: gradientColors[0].withOpacity(0.5),
+              spreadRadius: 2,
+              blurRadius: 5,
+            ),
+          ],
+        ),
+        child: Icon(selectedIcon, color: Colors.white, size: 28),
+      )
+          : Icon(unselectedIcon, color: Colors.white70, size: 24),
+      label: label,
     );
   }
 }

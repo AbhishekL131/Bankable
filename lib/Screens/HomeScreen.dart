@@ -1,10 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:intl/intl.dart'; // For date formatting
+import 'package:google_fonts/google_fonts.dart';
 import '../components/budget_bar.dart';
-import '../firebase_utilities/firebase_auth_methods.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -23,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (user != null) {
       return _firestore.collection('Users').doc(user.uid).snapshots();
     }
-    return Stream.empty(); // Empty stream if user is not authenticated
+    return Stream.empty();
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> getTransactionsStream() {
@@ -36,13 +34,15 @@ class _HomeScreenState extends State<HomeScreen> {
           .orderBy('timestamp', descending: true)
           .snapshots();
     }
-    return Stream.empty(); // Empty stream if user is not authenticated
+    return Stream.empty();
   }
 
   int getRemainingDaysInMonth() {
     final today = DateTime.now();
     final lastDayOfMonth = DateTime(today.year, today.month + 1, 0);
-    return lastDayOfMonth.difference(today).inDays;
+    return lastDayOfMonth
+        .difference(today)
+        .inDays;
   }
 
   double getPerDayRemainingBudget(double remainingBudget) {
@@ -53,83 +53,112 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(
-          "Bankable",
-          style: TextStyle(
-            fontSize: 28,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Arial', // Custom font for more style (optional)
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.teal.shade700, Colors.teal.shade300],
           ),
         ),
-        backgroundColor: Colors.teal.shade400, // Slightly lighter base color for gradient
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.teal.shade600, Colors.teal.shade300],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        centerTitle: true,
-        elevation: 5, // Adds slight elevation for a floating effect
-        shadowColor: Colors.teal.shade700, // Adding shadow to give depth
-      ),
-
-
-      body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-        stream: getBudgetStream(),
-        builder: (context, budgetSnapshot) {
-          if (budgetSnapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-          if (budgetSnapshot.hasError) {
-            return Text('Error: ${budgetSnapshot.error}');
-          }
-          if (!budgetSnapshot.hasData || !budgetSnapshot.data!.exists) {
-            return Text('No data found!');
-          }
-
-          final userData = budgetSnapshot.data!.data() ?? {};
-          budget = userData['Budget']?.toDouble() ?? 0.0;
-
-          return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-            stream: getTransactionsStream(),
-            builder: (context, txSnapshot) {
-              if (txSnapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              }
-              if (txSnapshot.hasError) {
-                return Text('Error: ${txSnapshot.error}');
-              }
-
-              final transactions = txSnapshot.data?.docs ?? [];
-              totalExpenses = transactions
-                  .where((doc) => doc['type'] == 'Expense')
-                  .fold(0.0, (sum, doc) => sum + (doc['amount'] as num));
-
-              double remainingBudget = budget - totalExpenses;
-
-              return SingleChildScrollView(
-                scrollDirection: Axis.vertical,
+        child: SafeArea(
+          child: Column(
+            children: [
+              Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    SizedBox(height: 10),
-                    _buildBudgetOverviewCard(remainingBudget),
-                    SizedBox(height: 10),
-                    _buildBudgetProgressBar(remainingBudget),
-                    SizedBox(height: 10),
-                    _buildRemainingBudgetCard(remainingBudget),
-                  ],
+                child: Text(
+                  "Bankable",
+                  style: GoogleFonts.poppins(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 10.0,
+                        color: Colors.black.withOpacity(0.3),
+                        offset: Offset(2.0, 2.0),
+                      ),
+                    ],
+                  ),
                 ),
-              );
-            },
-          );
-        },
+              ),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ),
+                    child: StreamBuilder<
+                        DocumentSnapshot<Map<String, dynamic>>>(
+                      stream: getBudgetStream(),
+                      builder: (context, budgetSnapshot) {
+                        if (budgetSnapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(child: CircularProgressIndicator());
+                        }
+                        if (budgetSnapshot.hasError) {
+                          return Text('Error: ${budgetSnapshot.error}');
+                        }
+                        if (!budgetSnapshot.hasData || !budgetSnapshot.data!
+                            .exists) {
+                          return Text('No data found!');
+                        }
+
+                        final userData = budgetSnapshot.data!.data() ?? {};
+                        budget = userData['Budget']?.toDouble() ?? 0.0;
+
+                        return StreamBuilder<QuerySnapshot<
+                            Map<String, dynamic>>>(
+                          stream: getTransactionsStream(),
+                          builder: (context, txSnapshot) {
+                            if (txSnapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return Center(child: CircularProgressIndicator());
+                            }
+                            if (txSnapshot.hasError) {
+                              return Text('Error: ${txSnapshot.error}');
+                            }
+
+                            final transactions = txSnapshot.data?.docs ?? [];
+                            totalExpenses = transactions
+                                .where((doc) => doc['type'] == 'Expense')
+                                .fold(0.0, (sum, doc) => sum +
+                                (doc['amount'] as num));
+
+                            double remainingBudget = budget - totalExpenses;
+
+                            return SingleChildScrollView(
+                              scrollDirection: Axis.vertical,
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                children: [
+                                  SizedBox(height: 10),
+                                  _buildBudgetOverviewCard(remainingBudget),
+                                  SizedBox(height: 10),
+                                  _buildBudgetProgressBar(remainingBudget),
+                                  SizedBox(height: 10),
+                                  _buildRemainingBudgetCard(remainingBudget),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -263,7 +292,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            // Speedometer on the left
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
@@ -288,13 +316,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(width: 15),
-
-            // Details inline on the right
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Inline Expense Details
                   Row(
                     children: [
                       Icon(Icons.square_rounded, size: 15, color: Colors.red),
@@ -310,14 +335,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   const SizedBox(height: 15),
-
-                  // Inline Remaining Details
                   Row(
                     children: [
                       Icon(Icons.square_rounded, size: 15, color: Colors.green),
                       const SizedBox(width: 10),
                       Text(
-                        "${(remainingBudget / budget * 100).toStringAsFixed(1)}%",
+                        "${(remainingBudget / budget * 100).toStringAsFixed(
+                            1)}%",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -327,16 +351,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-
-                  // Budget Summary Progress Bar
                   Container(
                     height: 9,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15)
+                        borderRadius: BorderRadius.circular(15)
                     ),
                     child: LinearProgressIndicator(
                       value: totalExpenses / budget,
-
                       backgroundColor: Colors.grey.shade300,
                       valueColor: AlwaysStoppedAnimation<Color>(
                         Colors.red.withOpacity(0.8),
@@ -344,7 +365,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
-
                 ],
               ),
             ),
@@ -352,10 +372,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
-
-
-
-
   }
 
   Widget _buildRemainingBudgetCard(double remainingBudget) {

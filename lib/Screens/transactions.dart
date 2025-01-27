@@ -1,6 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class Transactions extends StatefulWidget {
@@ -9,7 +9,6 @@ class Transactions extends StatefulWidget {
 }
 
 class _TransactionsState extends State<Transactions> {
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -17,7 +16,7 @@ class _TransactionsState extends State<Transactions> {
   double totalExpenses = 0.0;
   List<Map<String, dynamic>> transactions = [];
 
-  DateTime selectedDate = DateTime.now();  // Stores the selected date
+  DateTime selectedDate = DateTime.now();
 
   @override
   void initState() {
@@ -28,7 +27,6 @@ class _TransactionsState extends State<Transactions> {
   void fetchBudgetAndTransactions() async {
     final user = _auth.currentUser;
     if (user != null) {
-      // Fetch budget
       final docSnapshot = await _firestore.collection('Users').doc(user.uid).get();
       if (docSnapshot.exists) {
         setState(() {
@@ -36,10 +34,8 @@ class _TransactionsState extends State<Transactions> {
         });
       }
 
-      // Format the selected date to 'yyyy-MM-dd'
       final selectedDateString = DateFormat('yyyy-MM-dd').format(selectedDate);
 
-      // Fetch transactions based on the selected date
       final querySnapshot = await _firestore
           .collection('Users')
           .doc(user.uid)
@@ -58,20 +54,19 @@ class _TransactionsState extends State<Transactions> {
     }
   }
 
-  // Function to show the date picker
   void _selectDate() async {
-    final DateTime picked = await showDatePicker(
+    final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
-    ) ?? selectedDate;
+    );
 
     if (picked != null && picked != selectedDate) {
       setState(() {
-        selectedDate = picked;  // Update the selected date
+        selectedDate = picked;
       });
-      fetchBudgetAndTransactions();  // Fetch transactions for the selected date
+      fetchBudgetAndTransactions();
     }
   }
 
@@ -81,7 +76,6 @@ class _TransactionsState extends State<Transactions> {
     TextEditingController budgetController = TextEditingController();
     String transactionType = "Expense";
 
-    // Function to handle setting budget
     void setBudget() async {
       if (budgetController.text.isNotEmpty) {
         final double newBudget = double.parse(budgetController.text);
@@ -101,131 +95,142 @@ class _TransactionsState extends State<Transactions> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(15.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Add Transaction or Set Budget",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 16),
-              // Budget setting field
-              TextField(
-                controller: budgetController,
-                decoration: InputDecoration(
-                  labelText: "Set Budget (Optional)",
-                  border: OutlineInputBorder(),
+        return AnimatedContainer(
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.8,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 10,
+                  spreadRadius: 5,
                 ),
-                keyboardType: TextInputType.number,
-              ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  setBudget();
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                    backgroundColor:  Colors.teal
+              ],
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: -50,
+                  right: -50,
+                  child: Container(
+                    width: 150,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.teal.withOpacity(0.1),
+                    ),
+                  ),
                 ),
-                child: Text("Set Budget",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
-              ),
-              SizedBox(height: 16),
-              // Transaction amount field
-              TextField(
-                controller: amountController,
-                decoration: InputDecoration(
-                  labelText: "Amount",
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-              SizedBox(height: 16),
-              // Transaction description field
-              TextField(
-                controller: descriptionController,
-                decoration: InputDecoration(
-                  labelText: "Description",
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(height: 16),
-              // Dropdown to select Expense/Income
-              DropdownButtonFormField<String>(
-                value: transactionType,
-                items: ["Expense", "Income"]
-                    .map((type) => DropdownMenuItem(
-                  value: type,
-                  child: Text(type),
-                ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    transactionType = value!;
-                  });
-                },
-                decoration: InputDecoration(
-                  labelText: "Transaction Type",
-                  border: OutlineInputBorder(),
-                ),
-                dropdownColor: Colors.white,
-              ),
-              SizedBox(height: 20),
-              // Add Transaction button
-              ElevatedButton(
-                onPressed: () async {
-                  final user = _auth.currentUser;
-                  if (user != null && amountController.text.isNotEmpty) {
-                    final double amount = double.parse(amountController.text);
+                Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Add Transaction or Set Budget",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal.shade800,
+                        ),
+                      ),
+                      SizedBox(height: 24),
+                      _buildAnimatedTextField(
+                        controller: budgetController,
+                        label: "Set Budget (Optional)",
+                        icon: Icons.account_balance_wallet,
+                      ),
+                      SizedBox(height: 16),
+                      _buildAnimatedButton(
+                        onPressed: () {
+                          setBudget();
+                          Navigator.pop(context);
+                        },
+                        label: "Set Budget",
+                        icon: Icons.save,
+                      ),
+                      SizedBox(height: 24),
+                      _buildAnimatedTextField(
+                        controller: amountController,
+                        label: "Amount",
+                        icon: Icons.attach_money,
+                      ),
+                      SizedBox(height: 16),
+                      _buildAnimatedTextField(
+                        controller: descriptionController,
+                        label: "Description",
+                        icon: Icons.description,
+                      ),
+                      SizedBox(height: 16),
+                      _buildAnimatedDropdown(
+                        value: transactionType,
+                        items: ["Expense", "Income"],
+                        onChanged: (String? newValue) {
+                          if (newValue != null) {
+                            setState(() {
+                              transactionType = newValue;
+                            });
+                          }
+                        },
+                        icon: Icons.category,
+                      ),
 
-                    // Add income to the budget if the transaction is "Income"
-                    if (transactionType == "Income") {
-                      final updatedBudget = budget + amount;
-                      await _firestore.collection('Users').doc(user.uid).set(
-                        {'Budget': updatedBudget},
-                        SetOptions(merge: true),
-                      );
-                      setState(() {
-                        budget = updatedBudget;
-                      });
-                    }
+                      SizedBox(height: 24),
+                      _buildAnimatedButton(
+                        onPressed: () async {
+                          final user = _auth.currentUser;
+                          if (user != null && amountController.text.isNotEmpty) {
+                            final double amount = double.parse(amountController.text);
+                            if (transactionType == "Income") {
+                              final updatedBudget = budget + amount;
+                              await _firestore.collection('Users').doc(user.uid).set(
+                                {'Budget': updatedBudget},
+                                SetOptions(merge: true),
+                              );
+                              setState(() {
+                                budget = updatedBudget;
+                              });
+                            }
 
-                    // Add transaction to the Firestore database
-                    await _firestore
-                        .collection('Users')
-                        .doc(user.uid)
-                        .collection('Transactions')
-                        .add({
-                      'amount': amount,
-                      'description': descriptionController.text,
-                      'type': transactionType,
-                      'timestamp': Timestamp.now(),
-                    });
+                            await _firestore
+                                .collection('Users')
+                                .doc(user.uid)
+                                .collection('Transactions')
+                                .add({
+                              'amount': amount,
+                              'description': descriptionController.text,
+                              'type': transactionType,
+                              'timestamp': Timestamp.now(),
+                            });
 
-                    // Refresh Budget and Transactions
-                    fetchBudgetAndTransactions();
-                    Navigator.pop(context);
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 50),
-                    backgroundColor: Colors.teal
+                            fetchBudgetAndTransactions();
+                            Navigator.pop(context);
+                          }
+                        },
+                        label: "Add Transaction",
+                        icon: Icons.add_circle,
+                      ),
+                    ],
+                  ),
                 ),
-                child: Text("Add Transaction",style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white,fontSize: 18),),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -238,10 +243,10 @@ class _TransactionsState extends State<Transactions> {
             fontSize: 28,
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Arial', // Custom font for more style (optional)
+            fontFamily: 'Arial',
           ),
         ),
-        backgroundColor: Colors.teal.shade400, // Slightly lighter base color for gradient
+        backgroundColor: Colors.teal.shade400,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -252,11 +257,9 @@ class _TransactionsState extends State<Transactions> {
           ),
         ),
         centerTitle: true,
-        elevation: 5, // Adds slight elevation for a floating effect
-        shadowColor: Colors.teal.shade700, // Adding shadow to give depth
+        elevation: 5,
+        shadowColor: Colors.teal.shade700,
       ),
-
-
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
@@ -291,9 +294,7 @@ class _TransactionsState extends State<Transactions> {
                   ),
                 ],
               ),
-
             ),
-
             Expanded(
               child: transactions.isEmpty
                   ? Center(child: Text("No transactions for the selected date.", style: TextStyle(fontSize: 18, color: Colors.grey)))
@@ -301,126 +302,108 @@ class _TransactionsState extends State<Transactions> {
                 itemCount: transactions.length,
                 itemBuilder: (context, index) {
                   final transaction = transactions[index];
-                  final Timestamp timestamp = transaction['timestamp'];  // Assuming 'timestamp' is a Firestore Timestamp field
-                  final DateTime transactionDate = timestamp.toDate();  // Convert Timestamp to DateTime
-                  final String formattedDate = DateFormat('dd MMM yyyy').format(transactionDate); // Formatting date
-                  final String formattedTime = DateFormat('h:mm a').format(transactionDate); // Formatting time
+                  final Timestamp timestamp = transaction['timestamp'];
+                  final DateTime transactionDate = timestamp.toDate();
+                  final String formattedDate = DateFormat('dd MMM yyyy').format(transactionDate);
+                  final String formattedTime = DateFormat('h:mm a').format(transactionDate);
 
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                    elevation: 6,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Container(
-                      padding: EdgeInsets.all(16),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    child: AnimatedContainer(
+
+                      duration: Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.teal.shade50,
-                            Colors.teal.shade100,
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Icon Container
-                          Container(
-                            padding: EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: transaction['type'] == 'Expense'
-                                  ? Colors.red.shade100
-                                  : Colors.green.shade100,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              transaction['type'] == 'Expense'
-                                  ? Icons.arrow_upward
-                                  : Icons.arrow_downward,
-                              color: transaction['type'] == 'Expense'
-                                  ? Colors.red
-                                  : Colors.green,
-                              size: 20,
-                            ),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
                           ),
-                          SizedBox(width: 16),
-                          // Details Column
-                          Expanded(
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            // Handle tap
+                          },
+                          child: Padding(
+                            padding: EdgeInsets.all(16),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  transaction['description'],
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  transaction['type'],
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.grey[700],
-                                  ),
-                                ),
-                                SizedBox(height: 8),
                                 Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Icon(
-                                      Icons.access_time,
-                                      size: 16,
-                                      color: Colors.grey[600],
-                                    ),
-                                    SizedBox(width: 6),
                                     Text(
-                                      "$formattedDate | $formattedTime",
+                                      transaction['description'],
                                       style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[700],
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: transaction['type'] == 'Expense'
+                                            ? Colors.red.withOpacity(0.1)
+                                            : Colors.green.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        transaction['type'],
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: transaction['type'] == 'Expense'
+                                              ? Colors.red.shade700
+                                              : Colors.green.shade700,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
+                                SizedBox(height: 12),
+                                Text(
+                                  transaction['type'] == 'Expense'
+                                      ? "- ₹${(transaction['amount'] ?? 0).toDouble().toStringAsFixed(2)}"
+                                      : "+ ₹${(transaction['amount'] ?? 0).toDouble().toStringAsFixed(2)}",
+                                  style: TextStyle(
+                                    color: transaction['type'] == 'Expense'
+                                        ? Colors.red.shade700
+                                        : Colors.green.shade700,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  "$formattedDate | $formattedTime",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
                               ],
                             ),
                           ),
-                          // Amount Display
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                transaction['type'] == 'Expense'
-                                    ? "- ₹${(transaction['amount'] ?? 0).toDouble().toStringAsFixed(2)}"
-                                    : "+ ₹${(transaction['amount'] ?? 0).toDouble().toStringAsFixed(2)}",
-                                style: TextStyle(
-                                  color: transaction['type'] == 'Expense'
-                                      ? Colors.red
-                                      : Colors.green,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   );
-
                 },
-              ),
+              )
+
             )
           ],
         ),
       ),
-
       floatingActionButton: FloatingActionButton(
         onPressed: showAddTransactionBottomSheet,
         backgroundColor: Colors.teal,
@@ -430,6 +413,128 @@ class _TransactionsState extends State<Transactions> {
           size: 25,
         ),
       ),
+    );
+  }
+
+
+
+  Widget _buildAnimatedTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+  }) {
+    return TweenAnimationBuilder(
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: Duration(milliseconds: 500),
+      builder: (context, double value, child) {
+        return Transform.scale(
+          scale: value,
+          child: Opacity(
+            opacity: value,
+            child: TextField(
+              controller: controller,
+              decoration: InputDecoration(
+                labelText: label,
+                prefixIcon: Icon(icon, color: Colors.teal),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: BorderSide(color: Colors.teal.shade200),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: BorderSide(color: Colors.teal, width: 2),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String transactionType = "Expense";
+
+  Widget _buildAnimatedDropdown({
+    required String value,
+    required List<String> items,
+    required Function(String?) onChanged,
+    required IconData icon,
+  }) {
+    return TweenAnimationBuilder(
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: Duration(milliseconds: 500),
+      builder: (context, double value, child) {
+        return Transform.scale(
+          scale: value,
+          child: Opacity(
+            opacity: value,
+            child: DropdownButtonFormField<String>(
+              value: transactionType, // Use the state variable here
+              items: items.map((String type) {
+                return DropdownMenuItem<String>(
+                  value: type,
+                  child: Text(type),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  onChanged(newValue);
+                  setState(() {
+                    transactionType = newValue; // Update the state variable
+                  });
+                }
+              },
+              decoration: InputDecoration(
+                labelText: "Transaction Type",
+                prefixIcon: Icon(icon, color: Colors.teal),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: BorderSide(color: Colors.teal.shade200),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: BorderSide(color: Colors.teal, width: 2),
+                ),
+              ),
+              dropdownColor: Colors.white,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAnimatedButton({
+    required VoidCallback onPressed,
+    required String label,
+    required IconData icon,
+  }) {
+    return TweenAnimationBuilder(
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: Duration(milliseconds: 500),
+      builder: (context, double value, child) {
+        return Transform.scale(
+          scale: value,
+          child: Opacity(
+            opacity: value,
+            child: ElevatedButton.icon(
+              onPressed: onPressed,
+              icon: Icon(icon, color: Colors.white),
+              label: Text(
+                label,
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal,
+                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
