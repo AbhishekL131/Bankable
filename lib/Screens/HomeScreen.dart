@@ -54,34 +54,29 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.teal.shade700, Colors.teal.shade300],
-          ),
+          color: Colors.white
         ),
+
         child: SafeArea(
           child: Column(
             children: [
+
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.only(top : 10.0),
                 child: Text(
                   "Bankable",
-                  style: GoogleFonts.poppins(
-                    fontSize: 28,
+                  style: TextStyle(
+                    fontSize: 25,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        blurRadius: 10.0,
-                        color: Colors.black.withOpacity(0.3),
-                        offset: Offset(2.0, 2.0),
-                      ),
-                    ],
+                    color: Colors.black54
                   ),
                 ),
               ),
+
+              //SizedBox(height: 20,),
+
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
